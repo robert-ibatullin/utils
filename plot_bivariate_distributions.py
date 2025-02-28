@@ -43,7 +43,6 @@ def plot_bivariate_distribution(
     max_density = max(density_0.max(), density_1.max())
     ax.set_xlim(-max_density, max_density)
 
-    # Create legend
     ax.legend(loc='best')
 
     return ax
