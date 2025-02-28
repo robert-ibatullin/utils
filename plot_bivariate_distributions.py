@@ -10,15 +10,17 @@ def plot_bivariate_distribution(
         ax: plt.axes,
     ) -> plt.axes:
 
-    if pd.api.types.is_integer_dtype(df[feature]):
-        # Use consecutive integers as bins
-        min_value = df[feature].min()
-        max_value = df[feature].max()
-        bins = np.arange(min_value, max_value + 2) - 0.5  # Extend to include the last integer
-        logscale = (min_value > 0 and max_value / min_value > 100)
+    min_value = df[feature].min()
+    max_value = df[feature].max()
+    logscale = (min_value >= 0 and max_value / (min_value+1) > 100)
+    if not logscale:
+        if pd.api.types.is_integer_dtype(df[feature]):
+            # Use consecutive integers as bins
+            bins = np.arange(min_value, max_value + 2) - 0.5  # Extend to include the last integer
+        else:
+            bins = np.linspace(min_value, max_value, 20)
     else:
-        bins = 30
-        logscale = False
+        bins = np.geomspace(min_value+0.5, max_value, 20)
 
     bin_edges = np.histogram_bin_edges(df[feature], bins=bins)
     density_0, _ = np.histogram(df[df['target'] == 0][feature], bins=bin_edges, density=True)
@@ -31,7 +33,7 @@ def plot_bivariate_distribution(
     ax.plot(density_1 - density_0, bin_centers, color='black', label='Difference')
 
     if logscale:
-        ax.set_xscale('log')
+        ax.set_yscale('log')
 
     ax.set_xlabel('Density')
     ax.set_title(feature)
