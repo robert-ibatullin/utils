@@ -1,7 +1,8 @@
-from math import ceil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+from make_multiplot import get_multiplot_dimensions
 
 
 def plot_bivariate_distribution(
@@ -27,10 +28,10 @@ def plot_bivariate_distribution(
     density_1, _ = np.histogram(df[df['target'] == 1][feature], bins=bin_edges, density=True)
     bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
     heights = bin_edges[1:] - bin_edges[:-1]
-    ax.barh(bin_centers, -density_0, 
-            height=heights,
+    ax.barh(bin_centers, -density_0,
+                        height=heights,
             color='blue', label='Target 0')
-    ax.barh(bin_centers, density_1, 
+    ax.barh(bin_centers, density_1,
             height=heights,
             color='orange', label='Target 1')
     ax.plot(density_1 - density_0, bin_centers, color='black', label='Difference')
@@ -38,7 +39,7 @@ def plot_bivariate_distribution(
     if logscale:
         ax.set_yscale('log')
 
-    ax.set_xlabel('Density')
+    # ax.set_xlabel('Density')
     ax.set_title(feature)
 
     # Center the y-axis
@@ -48,8 +49,6 @@ def plot_bivariate_distribution(
     max_density = max(density_0.max(), density_1.max())
     ax.set_xlim(-max_density, max_density)
 
-    ax.legend(loc='best')
-
     return ax
 
 
@@ -57,11 +56,11 @@ def plot_bivariate_distributions(
         X: pd.DataFrame | np.ndarray,
         y: pd.Series | np.ndarray,
         features: list[str],
-        n_cols: int = 4
     ):
     num_features = len(features)
-    n_rows = ceil(num_features / n_cols)
-    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(20, 5 * n_rows))
+    n_cols, n_rows, fig_width, fig_height = get_multiplot_dimensions(num_features, 16, 9)
+    # Create the figure and axes
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_width, fig_height))
     fig.suptitle("Bivariate distributions of features by target", fontsize=16)
 
     if isinstance(X, np.ndarray):
@@ -74,11 +73,13 @@ def plot_bivariate_distributions(
     for i, feature in enumerate(features):
         ax = axes.flatten()[i]
         ax = plot_bivariate_distribution(df, feature, ax)
+    handles, labels = ax.get_legend_handles_labels()
 
     # Hide unused subplots
     for j in range(i + 1, n_rows * n_cols):
         fig.delaxes(axes.flatten()[j])
 
+    # Create a single legend for all subplots
+    fig.legend(handles, labels, loc='upper right')
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
-

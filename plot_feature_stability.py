@@ -1,13 +1,14 @@
-from math import ceil
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+
+from make_multiplot import get_multiplot_dimensions
+
 
 
 def plot_feature_stability(
         df: pd.DataFrame,
         features: list[str],
-        n_cols: int = 4
     ):
     """
     Generates stability plots for a list of specified features from provided DataFrame.
@@ -34,9 +35,8 @@ def plot_feature_stability(
             include_lowest=True
         )
 
-    num_features = len(features)
-    n_rows = ceil(num_features / n_cols)
-    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(20, 5 * n_rows))
+    n_cols, n_rows, fig_width, fig_height = get_multiplot_dimensions(len(features), 16, 9)
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(fig_width, fig_height))
     fig.suptitle("Feature Stability Plots", fontsize=16)
 
     # Plot each feature
@@ -44,15 +44,16 @@ def plot_feature_stability(
         ax = axes.flatten()[i]
         data = df_modelling.groupby("DateMonth")["BIN_" + feature].value_counts(normalize=True)
         data = data.unstack(level="BIN_" + feature).fillna(0)
-        data.plot(kind='bar', stacked=True, ax=ax)
+        data.plot(kind='bar', stacked=True, ax=ax, legend=None)
         ax.tick_params(axis='x', rotation=90)
         ax.set_title(feature)
         ax.set_ylabel('Proportion')
-        ax.legend(title='Quartile')
+    handles, labels = ax.get_legend_handles_labels()
 
     # Hide unused subplots
     for j in range(i + 1, n_rows * n_cols):
         fig.delaxes(axes.flatten()[j])
 
+    fig.legend(handles, labels, loc='upper right', title='Quartile')
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
