@@ -1,10 +1,4 @@
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-
-
 from math import ceil
-from typing import Callable
 
 
 def get_multiplot_dimensions(num_features: int, width: int, height: int) -> tuple[int, int, float, float]:
