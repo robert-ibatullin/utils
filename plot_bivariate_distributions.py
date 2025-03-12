@@ -26,9 +26,12 @@ def plot_bivariate_distribution(
     density_0, _ = np.histogram(df[df['target'] == 0][feature], bins=bin_edges, density=True)
     density_1, _ = np.histogram(df[df['target'] == 1][feature], bins=bin_edges, density=True)
     bin_centers = 0.5 * (bin_edges[1:] + bin_edges[:-1])
-    ax.barh(bin_centers, -density_0, height=(bin_edges[1] - bin_edges[0]),
+    heights = bin_edges[1:] - bin_edges[:-1]
+    ax.barh(bin_centers, -density_0, 
+            height=heights,
             color='blue', label='Target 0')
-    ax.barh(bin_centers, density_1, height=(bin_edges[1] - bin_edges[0]),
+    ax.barh(bin_centers, density_1, 
+            height=heights,
             color='orange', label='Target 1')
     ax.plot(density_1 - density_0, bin_centers, color='black', label='Difference')
 
@@ -78,3 +81,4 @@ def plot_bivariate_distributions(
 
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.show()
+
